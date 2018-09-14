@@ -7,12 +7,23 @@ var users = JSON.parse(fs.readFileSync("./storage.json", "utf8"));
 app.use(bodyParser.json());
 
 app.post("/users", (req, res) => {
-  let user = {
-    id: users.length + 1,
-    name: req.body.name,
-    email: req.body.email,
-    state: req.body.state
-  };
+  let lastUser = users[users.length - 1];
+  let user;
+  if (lastUser) {
+    user = {
+      id: lastUser.id + 1,
+      name: req.body.name,
+      email: req.body.email,
+      state: req.body.state
+    };
+  } else {
+    user = {
+      id: users.length + 1,
+      name: req.body.name,
+      email: req.body.email,
+      state: req.body.state
+    };
+  }
   users.push(user);
   fs.writeFileSync("./storage.json", JSON.stringify(users));
   res.sendStatus(200);
@@ -27,10 +38,11 @@ app.get("/users/:id", (req, res) => {
   user ? res.send(user) : res.sendStatus(400);
 });
 
-app.put("/users/:id/:name", (req, res) => {
+app.put("/users/:id", (req, res) => {
   let user = users.find(user => user.id === parseInt(req.params.id));
   if (user) {
-    user.name = req.params.name;
+    (user.name = req.body.name), (user.email = req.body.email);
+    user.state = req.body.state;
     res.send(user);
   } else {
     res.sendStatus(400);
